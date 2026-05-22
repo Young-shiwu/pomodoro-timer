@@ -1,3 +1,7 @@
+/* ============================================================
+   Apple-style Pomodoro Timer — inspired by iOS Clock & watchOS
+   ============================================================ */
+
 * {
   margin: 0;
   padding: 0;
@@ -5,8 +9,9 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: #1a1a2e;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display',
+               'Helvetica Neue', sans-serif;
+  background: #000000;
   color: #ffffff;
   min-height: 100vh;
   display: flex;
@@ -14,153 +19,209 @@ body {
   justify-content: center;
   user-select: none;
   -webkit-user-select: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+/* ---- Frosted card ---- */
 .container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
-  padding: 20px;
+  gap: 36px;
+  padding: 44px 36px 36px;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(60px) saturate(180%);
+  -webkit-backdrop-filter: blur(60px) saturate(180%);
+  border-radius: 44px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 0 0 0.5px rgba(255, 255, 255, 0.06),
+    0 25px 60px rgba(0, 0, 0, 0.5);
+  transition: border-color 0.4s ease, box-shadow 0.4s ease;
 }
 
-/* Mode indicator */
+.container.mode--break {
+  border-color: rgba(90, 200, 250, 0.2);
+  box-shadow:
+    0 0 0 0.5px rgba(90, 200, 250, 0.12),
+    0 25px 60px rgba(0, 0, 0, 0.5),
+    0 0 80px rgba(90, 200, 250, 0.06);
+}
+
+/* ---- Mode label ---- */
 .mode-indicator {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   letter-spacing: 4px;
-  color: #ff6347;
-  transition: color 0.3s ease;
+  text-transform: uppercase;
+  color: #ff9f0a;
+  transition: color 0.4s ease;
 }
 
 .container.mode--break .mode-indicator {
-  color: #4ecdc4;
+  color: #5ac8fa;
 }
 
-/* Timer ring */
+/* ---- Timer ring ---- */
 .timer-ring-container {
   position: relative;
-  width: 280px;
-  height: 280px;
+  width: 260px;
+  height: 260px;
 }
 
 .timer-ring {
   width: 100%;
   height: 100%;
   transform: rotate(-90deg);
+  filter: drop-shadow(0 0 12px rgba(255, 159, 10, 0.25));
+  transition: filter 0.4s ease;
+}
+
+.container.mode--break .timer-ring {
+  filter: drop-shadow(0 0 12px rgba(90, 200, 250, 0.25));
 }
 
 .timer-ring__bg {
   fill: none;
-  stroke: rgba(255, 255, 255, 0.08);
-  stroke-width: 8;
+  stroke: rgba(255, 255, 255, 0.06);
+  stroke-width: 6;
 }
 
 .timer-ring__fill {
   fill: none;
-  stroke: #ff6347;
-  stroke-width: 8;
+  stroke: #ff9f0a;
+  stroke-width: 6;
   stroke-linecap: round;
   stroke-dasharray: 565.49;
   stroke-dashoffset: 0;
-  transition: stroke-dashoffset 1s linear, stroke 0.3s ease;
+  transition: stroke-dashoffset 1s linear, stroke 0.4s ease;
 }
 
 .container.mode--break .timer-ring__fill {
-  stroke: #4ecdc4;
+  stroke: #5ac8fa;
 }
 
+/* ---- Center timer text ---- */
 .timer-text {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 56px;
-  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
-  font-weight: 300;
+  font-size: 54px;
+  font-weight: 200;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display',
+               'Helvetica Neue', sans-serif;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 1px;
   color: #ffffff;
-  letter-spacing: 2px;
 }
 
-/* Session count */
+/* ---- Session count ---- */
 .session-count {
-  font-size: 14px;
-  color: #888;
+  font-size: 13px;
   font-weight: 500;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.5px;
 }
 
-/* Controls */
+/* ---- Controls ---- */
 .controls {
   display: flex;
   gap: 12px;
 }
 
 .btn {
-  padding: 12px 32px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 25px;
-  background: transparent;
+  padding: 12px 28px;
+  border: none;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.08);
   color: #ffffff;
   font-size: 15px;
   font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text',
+               'Helvetica Neue', sans-serif;
+  letter-spacing: 0.3px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
   outline: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.14);
+  transform: scale(1.03);
 }
 
 .btn:active:not(:disabled) {
+  background: rgba(255, 255, 255, 0.18);
   transform: scale(0.97);
 }
 
 .btn:disabled {
-  opacity: 0.35;
+  opacity: 0.3;
   cursor: default;
 }
 
+/* Primary action button */
 .btn--primary {
-  background: #ff6347;
-  border-color: #ff6347;
+  background: #ff9f0a;
+  color: #000000;
+  font-weight: 590;
 }
 
 .btn--primary:hover:not(:disabled) {
-  background: #ff7a63;
-  border-color: #ff7a63;
+  background: #ffb340;
+}
+
+.btn--primary:active:not(:disabled) {
+  background: #ffcc66;
 }
 
 .container.mode--break .btn--primary {
-  background: #4ecdc4;
-  border-color: #4ecdc4;
+  background: #5ac8fa;
+  color: #000000;
 }
 
 .container.mode--break .btn--primary:hover:not(:disabled) {
-  background: #6dd5cf;
-  border-color: #6dd5cf;
+  background: #7dd8fb;
 }
 
-/* Sound toggle */
+.container.mode--break .btn--primary:active:not(:disabled) {
+  background: #a0e4fc;
+}
+
+/* Secondary / reset button */
+.btn--secondary {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.btn--secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ---- Sound toggle (Apple-style switch) ---- */
 .sound-toggle {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   font-size: 13px;
-  color: #888;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.4);
   cursor: pointer;
+  letter-spacing: 0.3px;
 }
 
 .sound-toggle input[type="checkbox"] {
   appearance: none;
   -webkit-appearance: none;
-  width: 36px;
-  height: 20px;
+  width: 42px;
+  height: 24px;
   background: rgba(255, 255, 255, 0.15);
-  border-radius: 10px;
+  border-radius: 12px;
   position: relative;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: background 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 .sound-toggle input[type="checkbox"]::after {
@@ -168,17 +229,28 @@ body {
   position: absolute;
   top: 2px;
   left: 2px;
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   background: #ffffff;
   border-radius: 50%;
-  transition: transform 0.2s ease;
+  transition: transform 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .sound-toggle input[type="checkbox"]:checked {
-  background: #ff6347;
+  background: #ff9f0a;
 }
 
 .sound-toggle input[type="checkbox"]:checked::after {
-  transform: translateX(16px);
+  transform: translateX(18px);
+}
+
+/* ---- Animations ---- */
+@keyframes pulse-ring {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.timer-ring.fill-complete {
+  animation: pulse-ring 0.4s ease-in-out;
 }

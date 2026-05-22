@@ -68,17 +68,16 @@ function playCompletionSound() {
       osc.stop(t + 0.25);
     });
   } catch (e) {
-    // AudioContext 异常时静默失败，不影响计时
+    console.warn('Audio playback failed:', e.message);
   }
 }
 
 // --- 系统通知（经 preload → ipcMain → Electron Notification）---
 function notifyCompletion() {
   if (state.phase === 'work') {
-    // 注意：调用时 phase 仍为 'work'，表示「刚完成工作」
-    window.pomodoro.notify('工作完成!', '该休息一下了。');
+    window.pomodoro.notify('工作完成!', '该休息一下了。').catch(() => {});
   } else {
-    window.pomodoro.notify('休息结束!', '开始专注吧。');
+    window.pomodoro.notify('休息结束!', '开始专注吧。').catch(() => {});
   }
 }
 
@@ -89,8 +88,8 @@ function updateTray() {
   const label = state.phase === 'work' ? '工作' : '休息';
   const text = state.status === 'running'
     ? `${label} - ${mins}:${secs}`
-    : `${label} - 已暂停`;
-  window.pomodoro.updateTrayTitle(text);
+    : state.status === 'paused' ? `${label} - 已暂停` : `${label} - 未开始`;
+  window.pomodoro.updateTrayTitle(text).catch(() => {});
 }
 
 // --- 界面刷新（所有状态变化后应调用，保持 UI 与 state 一致）---
@@ -172,6 +171,8 @@ function tick() {
     clearInterval(state.intervalId);
     state.intervalId = null;
 
+    updateUI(); // Render "0:00" before switching phases
+
     if (state.phase === 'work') {
       // 完成一个工作番茄
       state.sessionCount++;
@@ -196,6 +197,13 @@ function start() {
     state.remainingSeconds = state.totalSeconds;
   }
   state.status = 'running';
+  // Warm up AudioContext during user gesture so autoplay policy doesn't block sound later
+  if (state.soundEnabled) {
+    try {
+      const ctx = getAudioContext();
+      if (ctx.state === 'suspended') ctx.resume();
+    } catch (e) { /* ignore */ }
+  }
   startInterval();
   updateUI();
 }
@@ -223,6 +231,11 @@ function reset() {
   updateUI();
 }
 
+// --- 兜底：DOM 元素缺失时尽早报错 ---
+if (!timerText || !progressFill || !sessionCount || !btnStart || !btnPause || !btnReset || !soundToggle) {
+  throw new Error('Required DOM elements not found. Check index.html for matching IDs.');
+}
+
 // --- 事件绑定 ---
 btnStart.addEventListener('click', start);
 btnPause.addEventListener('click', pause);
@@ -232,7 +245,8 @@ soundToggle.addEventListener('change', (e) => {
 });
 
 // 托盘右键菜单「开始/暂停」「重置」经主进程 send → 此处接收
-window.pomodoro.onTrayAction(({ action }) => {
+if (window.pomodoro && window.pomodoro.onTrayAction) {
+  window.pomodoro.onTrayAction(({ action }) => {
   switch (action) {
     case 'toggle':
       if (state.status === 'running') pause();
@@ -242,7 +256,8 @@ window.pomodoro.onTrayAction(({ action }) => {
       reset();
       break;
   }
-});
+  });
+}
 
 // --- 初始化 ---
 // 圆环使用 dasharray = 周长，dashoffset 控制可见弧长；初始为满环

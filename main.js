@@ -110,6 +110,12 @@ function createTray() {
 ipcMain.handle('notify', (event, { title, body }) => {
   if (Notification.isSupported()) {
     const notification = new Notification({ title, body });
+    notification.on('click', () => {
+      if (win) {
+        win.show();
+        win.focus();
+      }
+    });
     notification.show();
   }
 });
