@@ -1,0 +1,12 @@
+{
+  "name": "pomodoro-timer",
+  "version": "1.0.0",
+  "description": "Desktop Pomodoro timer with clean circular UI",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^42.2.0"
+  }
+}

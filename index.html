@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'">
+  <title>番茄时钟</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container" id="container">
+    <div class="mode-indicator" id="modeIndicator">工作中</div>
+
+    <div class="timer-ring-container">
+      <svg class="timer-ring" viewBox="0 0 200 200">
+        <circle class="timer-ring__bg" cx="100" cy="100" r="90" />
+        <circle class="timer-ring__fill" id="progressFill" cx="100" cy="100" r="90" />
+      </svg>
+      <div class="timer-text" id="timerText">25:00</div>
+    </div>
+
+    <div class="session-count" id="sessionCount">已完成: 0</div>
+
+    <div class="controls">
+      <button id="btnStart" class="btn btn--primary">开始</button>
+      <button id="btnPause" class="btn" disabled>暂停</button>
+      <button id="btnReset" class="btn btn--secondary">重置</button>
+    </div>
+
+    <label class="sound-toggle">
+      <input type="checkbox" id="soundToggle" checked>
+      <span>提示音</span>
+    </label>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
